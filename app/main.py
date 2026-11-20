@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
-from app.errors import DataError
+from app.errors import CaliberError, DataError
 from app.settings import TITLE, ROOT
 from app.web import router as web
 from app.modules.intake.handler import router as intake
@@ -19,7 +19,10 @@ for router in (web,intake,contract,quality,domain,reconcile,runs,review):
 
 @app.exception_handler(DataError)
 def data_error(_: Request, error: DataError):
-    return JSONResponse({'code':error.code,'detail':str(error)},status_code=error.status)
+    body = {'code': error.code, 'detail': str(error)}
+    if isinstance(error, CaliberError) and error.preserved is not None:
+        body['preserved'] = error.preserved
+    return JSONResponse(body, status_code=error.status)
 
 @app.get('/health')
 def health():

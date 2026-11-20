@@ -63,6 +63,8 @@ h2 { margin: 0; font-size: 14px; }
 .notice.problem { color: var(--bad); }
 .empty { padding:17px; margin:0; border-inline-start:3px solid var(--line); color:var(--mute); }
 .state { font-weight: 700; border-bottom: 1px dotted currentColor; }
+.caliber { font: 11px var(--mono); color: var(--mute); white-space: nowrap; }
+.preserved { margin: 8px 0 0; padding: 7px 9px; border-inline-start: 3px solid #a04e12; background: #f3eee7; color: #6b4a2c; font-size: 12px; }
 
 .statusbar { position:sticky; bottom:0; z-index:2; display:flex; justify-content:space-between; gap:22px; padding:7px var(--pad); margin-top:auto; background:var(--bg); border-top:1px solid var(--line); font:10px var(--mono); }
 

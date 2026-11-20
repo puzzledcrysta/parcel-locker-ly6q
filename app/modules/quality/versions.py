@@ -2,6 +2,11 @@ from collections import defaultdict
 from app.evidence import finding
 
 
+def evidence_signature(row):
+    """Evidence counts as business content: a differing source is not a duplicate."""
+    return tuple(sorted((row.get('evidence') or {}).items()))
+
+
 def split_versions(records):
     groups = defaultdict(list)
     for record in records:
@@ -12,7 +17,7 @@ def split_versions(records):
         candidates = sorted((row for row in group if row['revision']==latest),key=lambda row:row['line'])
         older = [row for row in group if row['revision']!=latest]
         duplicates.extend(finding(row,'SUPERSEDED',f'修订 {latest} 取代旧版本') for row in older)
-        signatures = {tuple(row['fields'].items()) for row in candidates}
+        signatures = {(tuple(row['fields'].items()), evidence_signature(row)) for row in candidates}
         if len(signatures)>1:
             conflicts.extend(finding(row,'REV_CONFLICT',f'最高修订 {latest} 的来源字段互相冲突') for row in candidates)
         else:

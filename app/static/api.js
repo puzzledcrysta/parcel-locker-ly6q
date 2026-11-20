@@ -5,7 +5,10 @@ export async function query(path, body) {
   const response = await fetch(path, options);
   if (!response.ok) {
     const problem = await response.json();
-    throw Error(typeof problem.detail === 'string' ? problem.detail : '字段或文件有误');
+    const error = Error(typeof problem.detail === 'string' ? problem.detail : '字段或文件有误');
+    error.code = problem.code;
+    error.preserved = problem.preserved || null;
+    throw error;
   }
   return response.json();
 }

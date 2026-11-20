@@ -9,4 +9,7 @@ REASONS = {
     'AMOUNT_DELTA': '复算与外部账计量不同', 'BOOK_CONFLICT': '独立账含重复业务键',
     'RUN_UNKNOWN': '没有此批次', 'DEMO_UNKNOWN': '没有此样例', 'STALE': '复核版本已过期',
     'REVIEW_NOTE': '有差异时须填写复核意见', 'REVIEW_DECISION': '复核结论无效',
+    'CALIBER': '字段口径无法切换',
+    'SOURCE_MISSING': '新口径缺少现场来源', 'REASON_MISSING': '新口径缺少事件原因',
+    'ISOLATED': '因缺现场证据隔离，未计入差异',
 }

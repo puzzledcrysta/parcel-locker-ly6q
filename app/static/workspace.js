@@ -21,6 +21,32 @@ function notice(message, error = false) {
   alert.classList.toggle('problem', error);
 }
 
+function caliberLabel(block) {
+  if (!block) return '口径 —';
+  const assumed = block.assumed ? ' · 按旧记录推定' : '';
+  return `口径 ${block.version}${block.legacy ? ' · 旧班次' : ''}${assumed}`;
+}
+
+function showCaliber(report) {
+  const block = report?.caliber;
+  byId('caliber-badge').textContent = caliberLabel(block);
+  byId('caliber-badge').title = block?.label || '';
+  const preserved = byId('preserved');
+  const lines = [];
+  if (report?.preserved) {
+    lines.push('已保留并打开旧版正式结论；本批新口径未生效，正式差异未改动。');
+  }
+  if (block?.isolated_count) {
+    lines.push(`本批按${block.label}复算，${block.isolated_count} 条记录因缺少现场证据被隔离，不计入正式差异。`);
+  }
+  preserved.hidden = lines.length === 0;
+  preserved.textContent = lines.join(' ');
+}
+
+function selectedCaliber() {
+  return byId('caliber').value || null;
+}
+
 function tag(code) {
   return el('span', settings.reasons[code] || code, code === 'MATCH' ? 'state' : 'state problem');
 }
@@ -73,6 +99,7 @@ function setRun(report) {
   result = report;
   byId('created').textContent = `${report.manifest.created.slice(0, 19).replace('T', ' ')} UTC`;
   showEvidence(report.accepted[0]);
+  showCaliber(report);
   const id = result.manifest.run_id;
   byId('run-id').textContent = id.slice(0, 9);
   byId('run-id').title = id;
@@ -82,7 +109,6 @@ function setRun(report) {
   for (const cell of document.querySelectorAll('[data-count]')) cell.textContent = values[cell.dataset.count];
   live.textContent = `批次 ${id.slice(0, 9)} · ${result.balanced ? '记录已对齐' : '记录数不符'}`;
 }
-
 async function render() {
   const ticket = ++renderEpoch;
   const stage = selected;
@@ -127,7 +153,8 @@ async function render() {
           button.disabled = true;
           try {
             if (current) {
-              setRun(await query(`/api/runs/${id}/replay`, {}));
+              const report = await query(`/api/runs/${id}/replay`, {caliber: selectedCaliber()});
+              setRun(report);
               notice('复算已核对');
             } else {
               const [past, original] = await Promise.all([
@@ -139,7 +166,15 @@ async function render() {
               await render();
             }
           }
-          catch (error) { notice(error.message, true); }
+          catch (error) {
+            if (error.preserved) {
+              setRun(error.preserved);
+              notice(`${error.message}；已保留并打开旧版正式结论`, true);
+              await render();
+            } else {
+              notice(error.message, true);
+            }
+          }
           finally { button.disabled = false; }
         });
         return button;
@@ -206,6 +241,7 @@ byId('source').addEventListener('submit', async event => {
     if (original && text === original.text) candidate[`${name}_base64`] = encodeInput(original.bytes);
     else if (text.length || original) candidate[name] = text;
   }
+  candidate.caliber = selectedCaliber();
   action.disabled = true;
   ++renderEpoch;
   notice('计算中');
@@ -215,7 +251,18 @@ byId('source').addEventListener('submit', async event => {
     setRun(report);
     notice('批次已计算');
     await render();
-  } catch (error) { notice(error.message, true); }
+  } catch (error) {
+    // A failed caliber switch reopens the older formal conclusion.
+    const preserved = error.preserved;
+    if (preserved) {
+      inputs = candidate;
+      setRun(preserved);
+      notice(`${error.message}；已保留并打开旧版正式结论`, true);
+      await render();
+    } else {
+      notice(error.message, true);
+    }
+  }
   finally { action.disabled = false; }
 });
 byId('review').addEventListener('submit', async event => {

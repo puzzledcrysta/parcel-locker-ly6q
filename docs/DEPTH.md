@@ -9,8 +9,8 @@
 | 模块 | 使用者动作 | 入口 | 核心文件 | 测试 |
 |---|---|---|---|---|
 | M1 来源采信 | 接收分段记录、定位坏行 | `POST /api/intake` | `app/modules/intake/service.py` | `tests/test_intake.py` |
-| M2 字段解释 | 归一主键、版本、时间和原字段 | `POST /api/contract` | `app/modules/contract/service.py` | `tests/test_contract.py` |
-| M3 隔离裁决 | 归并重复、隔离争议版本 | `POST /api/quality` | `app/modules/quality/versions.py` | `tests/test_quality.py` |
+| M2 字段解释 | 归一主键、版本、时间与原字段，识别字段口径 | `POST /api/contract` | `app/caliber.py`、`app/modules/contract/service.py` | `tests/test_contract.py`、`tests/test_caliber.py` |
+| M3 隔离裁决 | 归并重复、隔离争议版本与新口径缺证据行 | `POST /api/quality` | `app/modules/quality/versions.py` | `tests/test_quality.py` |
 | M4 门磁回放 | 复算业务明细与边界证据 | `POST /api/domain` | `app/modules/domain/rule.py` | `tests/test_domain.py` |
 | M5 独立对账 | 核对外部记录并分别计量 | `POST /api/reconcile` | `app/modules/reconcile/service.py` | `tests/test_reconcile.py` |
 | M6 批次复算 | 保存运行、查询历史、复算原输入 | `POST /api/runs` | `app/modules/runs/service.py` | `tests/test_runs.py` |
@@ -31,6 +31,16 @@
 | TRAP-18 | 三种空态 | 测试构造输入 | `app/modules/intake/service.py` | `tests/test_intake.py::test_empty_states` |
 | TRAP-26 | 陈旧复核 | 测试构造输入 | `app/modules/review/decisions.py` | `tests/test_review.py::test_stale` |
 | TRAP-13 | 接收乱序门事件并按时间复原 | cases.csv | `app/modules/domain/rule.py` | `tests/test_domain.py::test_unordered` |
+| TRAP-31 | 口径变更后旧班次仍须重算并与独立账核对 | shift.csv | `app/caliber.py` | `tests/test_caliber.py::test_legacy_shift_still_recomputes_and_reconciles` |
+| TRAP-32 | 新班次缺现场来源或事件原因，不得以默认值混入正式差异 | shift_v2.csv | `app/modules/contract/service.py` | `tests/test_caliber.py::test_missing_evidence_never_defaults_into_the_difference` |
+| TRAP-33 | 口径切换失败须保留并打开旧版正式结论 | 测试构造输入 | `app/modules/runs/service.py` | `tests/test_caliber.py::test_failed_switch_reopens_previous_conclusion` |
+
+## 字段口径
+
+`app/caliber.py` 维护 1.0（旧班次兼容）与 2.0（新增现场来源、事件原因）。
+按表头识别，显式指定须与来源一致，否则 409。隔离记录在版本裁决之后判定，
+不进正式差异；独立对账以 `ISOLATED` 标注并从两侧合计剔除，使差额与交付结论同一口径。
+导出证据包与批次详情均带 `caliber` 块，列出本批版本与因此隔离的记录。
 
 ## 对账规则
 

@@ -31,6 +31,8 @@ class Source(BaseModel):
     data: CsvText | None = None
     data_base64: EncodedCsv | None = None
     demo: Literal['shift'] = 'shift'
+    # 显式口径；留空则按来源列自动识别。
+    caliber: str | None = Field(default=None, max_length=8)
 
     def raw(self):
         return input_bytes(self.data, self.data_base64, SAMPLE_ROOT/'shift.csv')
@@ -48,6 +50,10 @@ class Review(BaseModel):
     version: int = Field(ge=0)
     decision: Literal['确认','退回']
     note: str = Field(default='',max_length=500)
+
+
+class Replay(BaseModel):
+    caliber: str | None = Field(default=None, max_length=8)
 
 
 def read_sample(name):
