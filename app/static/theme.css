@@ -1,0 +1,16 @@
+/* 签入 · 开关门 */
+:root {
+  color-scheme: light;
+  --bg: #e9ebec; --rail: #d8dcdf; --accent: #a04e12; --ink: #202a31;
+  --panel: color-mix(in srgb, var(--bg) 91%, white);
+  --line: color-mix(in srgb, var(--ink) 24%, var(--bg));
+  --mute: color-mix(in srgb, var(--ink) 78%, var(--bg));
+  --th: color-mix(in srgb, var(--panel) 84%, var(--accent));
+  --rail-ink: var(--ink);
+  --primary: #fff;
+  --bad: #832635;
+  --ui: Helvetica Neue, sans-serif; --mono: ui-monospace, Menlo, monospace;
+  --pad: 15px; --row: 34px; --gap: 16px;
+  --figure: 24px; --title: 42px; --graph: 54px;
+  --scroll: 369px;
+}

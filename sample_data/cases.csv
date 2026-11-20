@@ -1,0 +1,8 @@
+case,格口事件,结算截止分钟
+unordered,25:PICK:e4;10:OPEN:e2;3:IN:e1;15:CLOSE:e3;10:OPEN:e2,40
+open,15:IN:e1;40:OPEN:e2,40
+two,1:IN:i;2:OPEN:o;3:CLOSE:c;4:PICK:p;10:IN:j,15
+future,60:IN:e,60
+jump,1:IN:i;4:PICK:p,10
+event_conflict,1:IN:i;2:IN:i,10
+same_minute,1:IN:i;1:OPEN:o,10
